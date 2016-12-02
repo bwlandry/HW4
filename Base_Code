@@ -1,26 +1,24 @@
 import sys, pygame
 pygame.init()
 
-size = width, height = 320,240
-speed = [2,2]
-black = 0,0,0
+#create colors
+white = (255,255,255)
+black = (0,0,0)
+red = (255, 0, 0)
+green = (0, 255, 0)
+blue = (0, 0, 255)
+purple = (230,0, 240)
+yellow = (255, 255, 0)
+gray = (70,70,70)
 
-screen = pygame.display.set_mode(size)
+#position vars
+x_pos = 0
+y_pos = 0
 
-ball = pygame.image.load("ball.gif")
-ballrect = ball.get_rect()
+#create a surface
+gameDisplay = pygame.display.set_mode((1000,800)) #initialize with a tuple
 
-while 1:
-	for event in pygame.event.get():
-		if event.type == pygame.QUIT: sys.exit()
 
-		ballrect = ballrect.move(speed)
-		if ballrect.left < 0 or ballrect.right > width:
-			speed[0] = -speed[0]
 
-		if ballrect.top < 0 or ballrect.bottom > height:
-			speed[1] = -speed[1]
+pygame.draw.circle(gameDisplay, red, (500,400), 50, 0)
 
-		screen.fill(black)
-		screen.blit(ball,ballrect)
-		pygame.display.flip()
