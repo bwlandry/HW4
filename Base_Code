@@ -1,6 +1,9 @@
 import sys, pygame
+from pygame import *
+from pygame.sprite import *
 import random
 import math
+
 
 pygame.init()
 
@@ -70,6 +73,28 @@ class OrbitingObjects(pygame.sprite.Sprite):
 		self.angle += self.speed
 
 
+class Satellite (pygame.sprite.Sprite):
+	def __init__ (self, location_x, location_y):
+		super().__init__()
+		self.image = image.load("Satelite-2-512.bmp").convert()
+		self.rect = self.image.get_rect().move(location_x, location_y)
+		self.speed = .5
+	
+	def update (self):
+		self.rect.y -= self.speed
+		if self.rect.y ==0:
+			self.rect.y = 800
+
+
+class Resource(pygame.sprite.Sprite):
+	def __init__(self):
+		super().__init__()
+		self.image = image.load("plasma.bmp").convert_alpha()
+		self.rect = self.image.get_rect().move((random.randint(0,1000), (random.randint(0,800))))
+
+
+
+
 class Player(pygame.sprite.Sprite):
 	def __init__(self,color,width,height):
 
@@ -84,26 +109,37 @@ class Player(pygame.sprite.Sprite):
 		self.rect.y = pos[1]
 
 
-object_list = pygame.sprite.Group()
+harmful_object_list = pygame.sprite.Group()
 all_sprites_list = pygame.sprite.Group()
 
 sun=YellowCircle()
-object_list.add(sun)
+harmful_object_list.add(sun)
 all_sprites_list.add(sun)
 
 for i in range(4):
 	orbiter = OrbitingObjects(red, 34,40)
 	orbiter.center_x = 500
 	orbiter.center_y = 400
-	orbiter.radius = random.randrange(40,350)
+	orbiter.radius = random.randrange(50,450)
 	orbiter.angle = random.random() * 2 * math.pi
 	orbiter.speed = .05
 
-	object_list.add(orbiter)
+	harmful_object_list.add(orbiter)
 	all_sprites_list.add(orbiter)
 
 player = Player(purple, 20, 20)
+satellite1 = Satellite(900,100)
+Satellite2 = Satellite (100, 700)
+plasma = Resource()
+
+
 all_sprites_list.add(player)
+all_sprites_list.add(satellite1)
+all_sprites_list.add(Satellite2)
+all_sprites_list.add(plasma)
+
+harmful_object_list.add(Satellite2)
+harmful_object_list.add(satellite1)
 
 print(all_sprites_list)
         
@@ -111,6 +147,7 @@ print(all_sprites_list)
 pygame.display.update()#only updates portion specified
 clock = pygame.time.Clock()
 
+resources_collected = 0
 
 
 ### Main Loop
@@ -126,10 +163,26 @@ while not gameExit:
 		gameDisplay.fill(black)
 		
 
-		all_sprites_list.draw(gameDisplay)
-		pygame.display.flip()
-		pygame.display.update()
-		clock.tick(50)
+		
+
+
+		if player.rect.colliderect(plasma.rect):
+			#the player collided with the resource
+			resources_collected += 1
+			all_sprites_list.remove(plasma)
+			plasma = Resource()
+			all_sprites_list.add(plasma)
+			print (resources_collected)
+
+	all_sprites_list.update()
+	gameDisplay.fill(black)
+		
+
+	all_sprites_list.draw(gameDisplay)
+	pygame.display.flip()
+	pygame.display.update()
+	clock.tick(50)
+
 
 	# if event.type == pygame.KEYDOWN:
 	# 	if event.key == pygame.K_LEFT:
