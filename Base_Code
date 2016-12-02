@@ -1,4 +1,7 @@
 import sys, pygame
+import random
+import math
+
 pygame.init()
 
 #create colors
@@ -20,36 +23,126 @@ gameDisplay = pygame.display.set_mode((1000,800)) #initialize with a tuple
 
 
 
-sun = pygame.draw.circle(gameDisplay, yellow, (500,400), 50, 0)
 
-def redraw():
-	gameDisplay.fill(black)
-	pygame.draw.circle(gameDisplay, yellow, (500,400), 50, 0)
-	pygame.draw.circle(gameDisplay, red, (50,100), 20, 0)
+# def redraw():
+# 	gameDisplay.fill(black)
+# 	pygame.draw.circle(gameDisplay, yellow, (500,400), 50, 0)
+# 	pygame.draw.circle(gameDisplay, red, (50,100), 20, 0)
+# 	pygame.draw.lines(gameDisplay, white, True, [(600,600), (620,640), (640,600), (620,560)], 5)
+# 	pygame.draw.rect(gameDisplay, purple, [600,75,35,35], 0)
 	
+class YellowCircle(pygame.sprite.Sprite):
+	def __init__(self):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.Surface((50, 50))
+		self.image.fill((255, 255, 255))
+		self.rect = self.image.get_rect().move(500,400)
+		pygame.draw.circle(self.image, yellow, (20,20), 10, 0)
+
+	def update(self):
+		self.image = pygame.Surface((80, 80))
+		
+		self.image.fill((0, 0, 0))
+		pygame.draw.circle(self.image, yellow, (40,40), 40, 0)
+		self.rect = self.image.get_rect().move(500,400)
+
+			
 
 
-pygame.display.update()		#only updates portion specified
+class OrbitingObjects(pygame.sprite.Sprite):
+	def __init__(self, color, width, height):
+		super().__init__()
+		self.image = pygame.Surface((width,height))
+		self.image.fill(color)
+		self.rect=self.image.get_rect()
 
+		self.center_x = 500
+		self.center_y= 400
+
+		self.angle = 0 #current angle (radians)
+		self.radius = 0 #radius of orbit motion
+		self.speed = .1 #radians per frame
+
+	def update(self):
+		self.rect.x = self.radius * math.sin(self.angle) + self.center_x
+		self.rect.y = self.radius * math.cos(self.angle) + self.center_y
+
+		self.angle += self.speed
+
+
+class Player(pygame.sprite.Sprite):
+	def __init__(self,color,width,height):
+
+		super().__init__()
+		self.image = pygame.Surface([width,height])
+		self.image.fill(color)
+		self.rect = self.image.get_rect()
+
+	def update(self):
+		pos = pygame.mouse.get_pos()
+		self.rect.x = pos[0]
+		self.rect.y = pos[1]
+
+
+object_list = pygame.sprite.Group()
+all_sprites_list = pygame.sprite.Group()
+
+sun=YellowCircle()
+object_list.add(sun)
+all_sprites_list.add(sun)
+
+for i in range(4):
+	orbiter = OrbitingObjects(red, 34,40)
+	orbiter.center_x = 500
+	orbiter.center_y = 400
+	orbiter.radius = random.randrange(40,350)
+	orbiter.angle = random.random() * 2 * math.pi
+	orbiter.speed = .05
+
+	object_list.add(orbiter)
+	all_sprites_list.add(orbiter)
+
+player = Player(purple, 20, 20)
+all_sprites_list.add(player)
+
+print(all_sprites_list)
+        
+
+pygame.display.update()#only updates portion specified
+clock = pygame.time.Clock()
+
+
+
+### Main Loop
 gameExit = False
 while not gameExit:
-	redraw()
+	
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			gameExit = True
 
-	if event.type == pygame.KEYDOWN:
-		if event.key == pygame.K_LEFT:
-			x_pos -= .1
-		if event.key == pygame.K_RIGHT:
-			x_pos += .1
-		if event.key == pygame.K_UP:
-			y_pos -= .1
-		if event.key == pygame.K_DOWN:
-			y_pos += .1
+		
+		all_sprites_list.update()
+		gameDisplay.fill(black)
+		
+
+		all_sprites_list.draw(gameDisplay)
+		pygame.display.flip()
+		pygame.display.update()
+		clock.tick(50)
+
+	# if event.type == pygame.KEYDOWN:
+	# 	if event.key == pygame.K_LEFT:
+	# 		x_pos -= .1
+	# 	if event.key == pygame.K_RIGHT:
+	# 		x_pos += .1
+	# 	if event.key == pygame.K_UP:
+	# 		y_pos -= .1
+	# 	if event.key == pygame.K_DOWN:
+	# 		y_pos += .1
 	
-	gameDisplay.fill(blue, rect=[x_pos,y_pos, 20,20])
-	pygame.display.update()		
+	# gameDisplay.fill(blue, rect=[x_pos,y_pos, 20,20])
+	# pygame.display.update()
 
 
 
