@@ -1,11 +1,15 @@
 import sys, pygame
 from pygame import *
 from pygame.sprite import *
+from pygame.mixer import *
+
+
 import random
 import math
 
 
 pygame.init()
+mixer.init()
 
 #create colors
 white = (255,255,255)
@@ -22,7 +26,7 @@ x_pos = 0
 y_pos = 0
 
 #create a surface
-gameDisplay = pygame.display.set_mode((1000,800)) #initialize with a tuple
+gameDisplay = pygame.display.set_mode((1000,600)) #initialize with a tuple
 
 
 
@@ -47,7 +51,7 @@ class YellowCircle(pygame.sprite.Sprite):
 		
 		self.image.fill((0, 0, 0))
 		pygame.draw.circle(self.image, yellow, (40,40), 40, 0)
-		self.rect = self.image.get_rect().move(500,400)
+		self.rect = self.image.get_rect().move(500,300)
 
 			
 
@@ -83,14 +87,14 @@ class Satellite (pygame.sprite.Sprite):
 	def update (self):
 		self.rect.y -= self.speed
 		if self.rect.y ==0:
-			self.rect.y = 800
+			self.rect.y = 600
 
 
 class Resource(pygame.sprite.Sprite):
 	def __init__(self):
 		super().__init__()
 		self.image = image.load("plasma.bmp").convert_alpha()
-		self.rect = self.image.get_rect().move((random.randint(0,1000), (random.randint(0,800))))
+		self.rect = self.image.get_rect().move((random.randint(0,1000), (random.randint(0,600))))
 
 
 
@@ -108,8 +112,20 @@ class Player(pygame.sprite.Sprite):
 		self.rect.x = pos[0]
 		self.rect.y = pos[1]
 
+def checkCollision(sprite1, sprite2):
+	col = pygame.sprite.spritecollide(sprite1, sprite2, True)
+	if col!=[]:
+		font = pygame.font.Font(None, 60)
+		text=font.render("GAME OVER", 1,(255,255,255))
+		gameDisplay.blit(text, (500, 300))
+		# all_sprites_list.add(game_over)
+		print ("You have collected", resources_collected, "resources. Great job!")
+		pygame.time.delay(4000)
+		sys.exit()
+
 
 harmful_object_list = pygame.sprite.Group()
+
 all_sprites_list = pygame.sprite.Group()
 
 sun=YellowCircle()
@@ -120,9 +136,9 @@ for i in range(4):
 	orbiter = OrbitingObjects(red, 34,40)
 	orbiter.center_x = 500
 	orbiter.center_y = 400
-	orbiter.radius = random.randrange(50,450)
+	orbiter.radius = random.randrange(50,300)
 	orbiter.angle = random.random() * 2 * math.pi
-	orbiter.speed = .05
+	orbiter.speed = random.randrange(0,100)/1000
 
 	harmful_object_list.add(orbiter)
 	all_sprites_list.add(orbiter)
@@ -154,48 +170,37 @@ resources_collected = 0
 gameExit = False
 while not gameExit:
 	
+
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			gameExit = True
-
-		
-		all_sprites_list.update()
-		gameDisplay.fill(black)
-		
-
-		
-
 
 		if player.rect.colliderect(plasma.rect):
 			#the player collided with the resource
 			resources_collected += 1
 			all_sprites_list.remove(plasma)
+			Sound("cha-ching.WAV")
 			plasma = Resource()
 			all_sprites_list.add(plasma)
 			print (resources_collected)
 
+
 	all_sprites_list.update()
+	checkCollision(player, harmful_object_list)
 	gameDisplay.fill(black)
-		
 
 	all_sprites_list.draw(gameDisplay)
+
+
+	font = pygame.font.Font(None,36)
+	text=font.render("Resources Collected= "+ str(resources_collected), 1, (255,255,255))
+	gameDisplay.blit(text, (50, 550))
+		
+
 	pygame.display.flip()
 	pygame.display.update()
 	clock.tick(50)
 
-
-	# if event.type == pygame.KEYDOWN:
-	# 	if event.key == pygame.K_LEFT:
-	# 		x_pos -= .1
-	# 	if event.key == pygame.K_RIGHT:
-	# 		x_pos += .1
-	# 	if event.key == pygame.K_UP:
-	# 		y_pos -= .1
-	# 	if event.key == pygame.K_DOWN:
-	# 		y_pos += .1
-	
-	# gameDisplay.fill(blue, rect=[x_pos,y_pos, 20,20])
-	# pygame.display.update()
 
 
 
