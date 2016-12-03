@@ -115,9 +115,10 @@ class Player(pygame.sprite.Sprite):
 def checkCollision(sprite1, sprite2):
 	col = pygame.sprite.spritecollide(sprite1, sprite2, True)
 	if col!=[]:
-		font = pygame.font.Font(None, 60)
-		text=font.render("GAME OVER", 1,(255,255,255))
-		gameDisplay.blit(text, (500, 300))
+		font = pygame.font.Font(None, 100)
+		text=font.render("GAME OVER", 1,(242,8,250))
+		gameDisplay.blit(text, (400, 300))
+		pygame.display.update()
 		# all_sprites_list.add(game_over)
 		print ("You have collected", resources_collected, "resources. Great job!")
 		pygame.time.delay(4000)
@@ -165,6 +166,7 @@ clock = pygame.time.Clock()
 
 resources_collected = 0
 
+success_sound = Sound("cha-ching.WAV")
 
 ### Main Loop
 gameExit = False
@@ -179,8 +181,8 @@ while not gameExit:
 			#the player collided with the resource
 			resources_collected += 1
 			all_sprites_list.remove(plasma)
-			Sound("cha-ching.WAV")
 			plasma = Resource()
+			Sound.play(success_sound, loops=0)
 			all_sprites_list.add(plasma)
 			print (resources_collected)
 
